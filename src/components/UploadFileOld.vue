@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="container">
-      <form enctype="multipart/form-data">
+      <!-- <form enctype="multipart/form-data">
         <div class="input-group">
           <div class="custom-file">
             <input
@@ -17,7 +17,12 @@
           </div>
           <div class="input-group-append"></div>
         </div>
-      </form>
+      </form> -->
+
+      <input type="text" class="form-control" placeholder="table name" v-model="tableName">
+      <input type="text" class="form-control mt-1" placeholder="fsoi" v-model="fsoiFileName">
+
+      <button class="btn btn-primary mt-3" @click="loadDataFromApi">Load transcripts</button>
     </div>
 
     <TableView
@@ -38,7 +43,7 @@
 
 <script>
 import TableView from "./TableView.vue";
-
+import axios from 'axios';
 export default {
   components: {
     TableView
@@ -46,6 +51,8 @@ export default {
   data() {
     return {
       selectedFileName: "Choose File",
+      tableName: 'dom_nap_raw_trans_data ',
+      fsoiFileName: 'f0000294.csv',
       csvFile: null,
       initialTableDataArray: [],
       columnNamesArray: [],
@@ -224,15 +231,31 @@ export default {
         alert("The File APIs are not fully supported in this browser.");
       }
     },
-    uploadFile() {
-      this.file = this.$refs.file.files[0];
+    loadDataFromApi(){
 
-      if (this.file && this.file.name && this.getExtension(this.file.name)) {
-        this.selectedFileName = this.file.name.toString();
-        this.readFile();
-      } else {
-        alert("Invalid file, Please upload a csv file");
-      }
+
+      var baseUrl = "https://vzsoi-west.ebiz.verizon.com/vzsoi/nap/hive/api/transcripts/";
+
+
+
+
+      axios.get(baseUrl+this.tableName+'/'+this.fsoiFileName).then(response => {
+// console.log(response)
+        if(response.data.length >0){
+
+          response.data.forEach(row => {
+
+            
+
+            this.csvDataArray.push(Object.values(row));
+
+             console.log(Object.values(row))
+            
+          });
+        }
+        
+      }).catch(error =>{console.log(error)})
+
     }
   }
 };

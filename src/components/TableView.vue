@@ -334,7 +334,11 @@ export default {
   },
   methods: {
     getTextAreaRows(col, text) {
-      text = text.replace(/\./g, "");
+
+      if(text == null){
+        text = '';
+      }
+     // text = text.replace(/\./g, "");
 
       var maxTextLengthInRow;
       if (col == this.paragraphColumn) {

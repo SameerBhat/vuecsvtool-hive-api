@@ -9,9 +9,12 @@
     "start": "npm run serve"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
     "bootstrap-vue": "^2.2.0",
     "core-js": "^3.4.4",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
     "vue": "^2.6.11"
   },
   "devDependencies": {
