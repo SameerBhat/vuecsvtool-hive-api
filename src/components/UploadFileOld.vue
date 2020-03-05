@@ -51,8 +51,8 @@ export default {
   data() {
     return {
       selectedFileName: "Choose File",
-      tableName: 'dom_nap_raw_trans_data ',
-      fsoiFileName: 'f0000294.csv',
+      tableName: "dom_nap_raw_trans_data",
+      fsoiFileName: "f0000294.csv",
       csvFile: null,
       initialTableDataArray: [],
       columnNamesArray: [],
@@ -232,25 +232,13 @@ export default {
       }
     },
     loadDataFromApi(){
+      var baseUrl = "https://vzsoi-west.ebiz.verizon.com/vzsoi/nap/hive/api/transcripts";
 
-
-      var baseUrl = "https://vzsoi-west.ebiz.verizon.com/vzsoi/nap/hive/api/transcripts/";
-
-
-
-
-      axios.get(baseUrl+this.tableName+'/'+this.fsoiFileName).then(response => {
-// console.log(response)
+      axios.get(`${baseUrl}/${this.tableName}/${this.fsoiFileName}`).then(response => {
         if(response.data.length >0){
-
           response.data.forEach(row => {
-
-            
-
             this.csvDataArray.push(Object.values(row));
-
-             console.log(Object.values(row))
-            
+             console.log(Object.values(row));
           });
         }
         
