@@ -69,9 +69,11 @@
 
     <div
       class="circular-button-fab-download show-after-upload"
-      @click="exportTableToCSV"
+      @click="pushDataToServer"
+      :disabled="loadingServer"
     >
-      &darr;
+    <span class="spinner-border spinner-border-sm" v-if="loadingServer" role="status" aria-hidden="true"></span>
+      <span v-if="!loadingServer"> &uarr; </span>
     </div>
 
     <!-- fab -->
@@ -179,93 +181,12 @@
     />
   </div>
 </template>
-<style lang="scss">
-#tableHead td {
-  position: sticky;
-  top: 100px;
-  background: steelblue;
-  color: white;
-}
 
-.greenBackground{
-  background: #4CAF50;
-
-  &:hover{
-     background-color: #388E3C !important;
-  }
-}
-.circular-button-fab-download {
-  border-radius: 30px;
-  color: #fff;
-  background-color: #43a047;
-  border-color: #388e3c;
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  margin: 45px;
-  padding: 16px;
-  width: 60px;
-  height: 60px;
-  text-align: center;
-  font-size: 20px;
-  margin-bottom: 70px;
-  z-index: 1003;
-  &:hover {
-    background-color: #1b5e20;
-    cursor: pointer;
-  }
-}
-
-.circular-button-fab-paginate {
-  border-radius: 30px;
-  color: #fff;
-  background-color: #d9534f;
-  border-color: #d43f3a;
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  margin: 120px;
-  padding: 16px;
-  width: 60px;
-  height: 60px;
-  text-align: center;
-  font-size: 20px;
-  margin-bottom: 70px;
-  z-index: 1003;
-  &:hover {
-    background-color: #283593;
-    cursor: pointer;
-  }
-  &.active {
-    background-color: #283593;
-    &:hover {
-      background-color: #d9534f;
-    }
-  }
-  .togglePaginationLabel {
-    height: 56px;
-    width: 57px;
-    margin-left: -15px;
-    margin-bottom: 0px !important;
-    margin-top: 13px !important;
-    transform: translateY(-15px);
-    &:hover {
-      cursor: pointer;
-    }
-  }
-  .pagination {
-    justify-content: center !important;
-  }
-  .pagination-wrapper {
-    display: flex;
-    justify-content: space-evenly;
-  }
-}
-</style>
 <script>
 import ContextMenu from "./ContextMenu";
 import TableFooter from "./TableFooter";
 import { bus } from "../main";
+import axios from 'axios';
 export default {
   components: {
     ContextMenu,
@@ -281,7 +202,9 @@ export default {
     "contextMenuDropdownArrays",
     "paragraphColumn",
     "speakerColumn",
-    "cpnColumn"
+    "cpnColumn",
+    "tableName",
+    "fnum"
   ],
   directives: {
     custom: {
@@ -313,12 +236,12 @@ export default {
   },
   mounted() {
     this.totalRows = this.csvDataArray.length;
-
     this.disablePagination();
   },
 
   data() {
     return {
+      loadingServer:false,
       eventBus: bus,
       footerKey: 0,
       isSpeakerSelected: false,
@@ -364,31 +287,45 @@ export default {
         return 20;
       }
     },
-    exportTableToCSV() {
-      var csvStringArray = [];
-      csvStringArray.push(this.firstRowTitles.join(","));
+    pushDataToServer() {
 
-      for (let i = 0; i < this.csvDataArray.length; i++) {
-        const row = this.csvDataArray[i];
-        for (let e = 0; e < this.csvDataArray[i].length; e++) {
-          this.csvDataArray[i][e] = this.csvDataArray[i][e]
-            .replace(/\n/g, "")
-            .trim();
-        }
-        const rowString = row.join(",");
-        csvStringArray.push(rowString);
-      }
+      this.loadingServer = true;
 
-      var csv = csvStringArray.join("\n");
-      var csvFile;
-      var downloadLink;
-      csvFile = new Blob([csv], { type: "text/plain", endings: "native" });
-      downloadLink = document.createElement("a");
-      downloadLink.download = "label_" + this.fileName;
-      downloadLink.href = window.URL.createObjectURL(csvFile);
-      downloadLink.style.display = "none";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
+        axios.post(`/${this.tableName}/${this.fnum}`, this.csvDataArray).then((response) => {
+         // console.log(response);
+
+         alert("data pushed to server");
+         window.location.reload();
+
+        });
+
+      
+
+
+      // var csvStringArray = [];
+      // csvStringArray.push(this.firstRowTitles.join(","));
+
+      // for (let i = 0; i < this.csvDataArray.length; i++) {
+      //   const row = this.csvDataArray[i];
+      //   for (let e = 0; e < this.csvDataArray[i].length; e++) {
+      //     this.csvDataArray[i][e] = this.csvDataArray[i][e]
+      //       .replace(/\n/g, "")
+      //       .trim();
+      //   }
+      //   const rowString = row.join(",");
+      //   csvStringArray.push(rowString);
+      // }
+
+      // var csv = csvStringArray.join("\n");
+      // var csvFile;
+      // var downloadLink;
+      // csvFile = new Blob([csv], { type: "text/plain", endings: "native" });
+      // downloadLink = document.createElement("a");
+      // downloadLink.download = "label_" + this.fileName;
+      // downloadLink.href = window.URL.createObjectURL(csvFile);
+      // downloadLink.style.display = "none";
+      // document.body.appendChild(downloadLink);
+      // downloadLink.click();
     },
     handleSelectedText(data) {
       if (data.text == "") {
@@ -539,3 +476,89 @@ export default {
   }
 };
 </script>
+
+
+
+<style lang="scss">
+#tableHead td {
+  position: sticky;
+  top: 100px;
+  background: steelblue;
+  color: white;
+}
+
+.greenBackground{
+  background: #4CAF50;
+
+  &:hover{
+     background-color: #388E3C !important;
+  }
+}
+.circular-button-fab-download {
+  border-radius: 30px;
+  color: #fff;
+  background-color: #43a047;
+  border-color: #388e3c;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  margin: 45px;
+  padding: 16px;
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 70px;
+  z-index: 1003;
+  &:hover {
+    background-color: #1b5e20;
+    cursor: pointer;
+  }
+}
+
+.circular-button-fab-paginate {
+  border-radius: 30px;
+  color: #fff;
+  background-color: #d9534f;
+  border-color: #d43f3a;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  margin: 120px;
+  padding: 16px;
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 70px;
+  z-index: 1003;
+  &:hover {
+    background-color: #283593;
+    cursor: pointer;
+  }
+  &.active {
+    background-color: #283593;
+    &:hover {
+      background-color: #d9534f;
+    }
+  }
+  .togglePaginationLabel {
+    height: 56px;
+    width: 57px;
+    margin-left: -15px;
+    margin-bottom: 0px !important;
+    margin-top: 13px !important;
+    transform: translateY(-15px);
+    &:hover {
+      cursor: pointer;
+    }
+  }
+  .pagination {
+    justify-content: center !important;
+  }
+  .pagination-wrapper {
+    display: flex;
+    justify-content: space-evenly;
+  }
+}
+</style>

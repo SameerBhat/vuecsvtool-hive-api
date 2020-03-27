@@ -1,28 +1,38 @@
 <template>
   <div>
     <div class="container">
-      <!-- <form enctype="multipart/form-data">
-        <div class="input-group">
-          <div class="custom-file">
-            <input
-              type="file"
-              ref="file"
-              class="custom-file-input"
-              id="custom-file"
-              @change="uploadFile"
-            />
-            <label class="custom-file-label" for="custom-file">{{
-              selectedFileName
-            }}</label>
-          </div>
-          <div class="input-group-append"></div>
-        </div>
-      </form> -->
 
-      <input type="text" class="form-control" placeholder="table name" v-model="tableName">
-      <input type="text" class="form-control mt-1" placeholder="fsoi" v-model="fsoiFileName">
+    <div class="form-row">
+    <div class="col">
+      <label for="tableName">Table Name</label>
+      <input type="text" class="form-control" id="tableName" aria-describedby="tableNameHelp" placeholder="Enter Table Name" v-model="tableName">
+      <small id="tableNameHelp" class="form-text text-muted">Enter the name of the transcript file.</small>
+    </div>
+    <div class="col">
 
-      <button class="btn btn-primary mt-3" @click="loadDataFromApi">Load transcripts</button>
+    <label for="fnum">Fnum</label>
+    <input type="text" class="form-control" id="fnum" aria-describedby="fnumHelp" placeholder="Enter fnum" v-model="fnum">
+    <small id="fnumHelp" class="form-text text-muted">Enter the fnum.</small>
+    </div>
+
+
+    <div class="col">
+      <label></label>
+       <button class="btn btn-primary btn-block mt-2" :disabled="loadingTranscripts" @click="loadDataFromApi">
+       <span class="spinner-border spinner-border-sm" v-if="loadingTranscripts" role="status" aria-hidden="true"></span>
+       Load transcripts
+      </button>
+    </div>
+  </div>
+  
+
+     
+
+
+
+  
+   
+     
     </div>
 
     <TableView
@@ -36,14 +46,16 @@
       :speaker-column="speakerColumn"
       :context-menu-dropdown-arrays="contextMenuDropdownArrays"
       :cpn-column="cpnColumn"
-    
-    />
+      :table-name="tableName"
+      :fnum="fnum"/>
   </div>
+
 </template>
 
 <script>
 import TableView from "./TableView.vue";
 import axios from 'axios';
+
 export default {
   components: {
     TableView
@@ -52,7 +64,8 @@ export default {
     return {
       selectedFileName: "Choose File",
       tableName: "dom_nap_raw_trans_data",
-      fsoiFileName: "f0000294.csv",
+      fnum: "",
+      loadingTranscripts: false,
       csvFile: null,
       initialTableDataArray: [],
       columnNamesArray: [],
@@ -182,67 +195,30 @@ export default {
     };
   },
   methods: {
-    getExtension(filename) {
-      filename = filename.toString();
-      var parts = filename.split(".");
-      return parts[parts.length - 1].trim();
-    },
-    readFile() {
-      var reader = new FileReader();
-      if (window.File && window.FileReader && window.FileList && window.Blob) {
-        reader.onload = e => {
-          var rows = e.target.result.split("\n");
-          this.csvDataArray = [];
-
-          var titlesLength = this.firstRowTitles.length;
-
-         
-
-          for (var i = 1; i < rows.length; i++) {
-            var cells = rows[i].split(",");
-            var lengthDeficit = titlesLength - cells.length;
-          
-
-            if (lengthDeficit > 0) {
-              for (var o = 0; o < lengthDeficit; o++) {
-                cells.push("");
-              }
-            }
-
-        
-
-            var row = [];
-            for (var j = 0; j < cells.length; j++) {
-              
-              if(cells[j].trim().length > 0){
-                
-                if(j > this.speakerColumn){
-                  this.columVisibilityMap[j] = true;
-                }
-                
-              }
-              row.push(cells[j]);
-            }
-            this.csvDataArray.push(row);
-          }
-        };
-        reader.readAsText(this.file);
-      } else {
-        alert("The File APIs are not fully supported in this browser.");
-      }
-    },
     loadDataFromApi(){
-      var baseUrl = "https://vzsoi-west.ebiz.verizon.com/vzsoi/nap/hive/api/transcripts";
-
-      axios.get(`${baseUrl}/${this.tableName}/${this.fsoiFileName}`).then(response => {
+      if(this.tableName.length >0 && this.fnum.length >0){
+      this.loadingTranscripts = true;
+      axios.get(`/${this.tableName}/${this.fnum}`).then(response => {
+        this.loadingTranscripts = false;
         if(response.data.length >0){
           response.data.forEach(row => {
             this.csvDataArray.push(Object.values(row));
              console.log(Object.values(row));
           });
+        }else{
+          alert("No results found")
         }
         
-      }).catch(error =>{console.log(error)})
+      }).catch((error) =>{
+        this.loadingTranscripts = false;
+        console.log(error);
+        alert("Something went wrong...")
+        
+        });
+
+      }else {
+        alert("Please fill in all the required fields")
+      }
 
     }
   }
