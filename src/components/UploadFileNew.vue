@@ -172,8 +172,6 @@ export default {
 
           var titlesLength = this.firstRowTitles.length;
 
-        
-
           for (var i = 1; i < rows.length; i++) {
             var cells = rows[i].split(",");
             var lengthDeficit = titlesLength - cells.length;

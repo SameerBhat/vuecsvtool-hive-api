@@ -201,9 +201,10 @@ export default {
       axios.get(`/${this.tableName}/${this.fnum}`).then(response => {
         this.loadingTranscripts = false;
         if(response.data.length >0){
+          this.csvDataArray = [];
           response.data.forEach(row => {
             this.csvDataArray.push(Object.values(row));
-             console.log(Object.values(row));
+            //  console.log(Object.values(row));
           });
         }else{
           alert("No results found")

@@ -292,10 +292,19 @@ export default {
       this.loadingServer = true;
 
         axios.post(`/${this.tableName}/${this.fnum}`, this.csvDataArray).then((response) => {
-         // console.log(response);
+          console.log(response);
 
-         alert("data pushed to server");
-         window.location.reload();
+          if(response.data.status == "success"){
+            this.loadingServer = false;
+            alert(response.data.message);
+            window.location.reload();
+          }else{
+            this.loadingServer = false;
+            alert(response.data.message);
+          }
+
+        //  alert("data pushed to server");
+        //  window.location.reload();
 
         });
 
