@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- {{csvDataArray[0][5]}} -->
+  
     <table id="newTable" class="table table-hover my-3">
       <tbody>
         <tr id="tableHead">
